@@ -1,9 +1,10 @@
-from fastapi import FastAPI,Depends, HTTPException
+from fastapi import FastAPI,Depends, HTTPException,Query
 from sqlalchemy.orm import Session
 from database import engine , session_local
 import models 
 import schemas
 from auth import verify_token, create_token
+
 
 models.Base.metadata.create_all(bind=engine) #create a table
 
@@ -36,11 +37,14 @@ def create_blog(blog : schemas.BlogCreate , db : Session = Depends(get_db), user
 
 #Read blogs
 @app.get("/blogs",response_model=list[schemas.BlogResponse])
-def read_blogs(db : Session = Depends(get_db)):
-    all_blogs = db.query(models.Blog).all()
+def read_blogs(db : Session = Depends(get_db),page:int = 1,limit:int = 5, search:str = Query(default=None)):
+    query = db.query(models.Blog).offset((page-1)*limit).limit(limit)
+    if search:
+        query = query.filter(models.Blog.title.ilike(f"%{search}%"))
+    all_blogs = query.all()
     if all_blogs is None:
         raise HTTPException(status_code=404,detail="No blogs found")
-    return all_blogs
+    return all_blogs    
 
 
 #Read a single blog
