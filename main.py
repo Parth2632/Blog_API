@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from database import engine , session_local
 import models 
 import schemas
+from auth import verify_token, create_token
 
 models.Base.metadata.create_all(bind=engine) #create a table
 
@@ -23,7 +24,7 @@ def home():
 
 #Create Blog
 @app.post("/blogs" , response_model=schemas.BlogResponse)
-def create_blog(blog : schemas.BlogCreate , db : Session = Depends(get_db)):
+def create_blog(blog : schemas.BlogCreate , db : Session = Depends(get_db), user=Depends(verify_token)):
     new_blog = models.Blog(
         title = blog.title,
         content = blog.content
@@ -52,7 +53,7 @@ def read_blog(id : int , db : Session = Depends(get_db)):
 
 #update blog
 @app.put("/blogs/{id}",response_model=schemas.BlogResponse)
-def update_blog(id : int , blog : schemas.BlogCreate,db : Session = Depends(get_db)):
+def update_blog(id : int , blog : schemas.BlogCreate,db : Session = Depends(get_db), user=Depends(verify_token)):
     update = db.query(models.Blog).filter(models.Blog.id == id).first()
     if update is None:
         raise HTTPException(status_code=404,detail="Blog not found")
@@ -64,11 +65,16 @@ def update_blog(id : int , blog : schemas.BlogCreate,db : Session = Depends(get_
 
 #delete blog api
 @app.delete("/blogs/{id}")
-def delete_blog(id : int , db : Session = Depends(get_db)):
+def delete_blog(id : int , db : Session = Depends(get_db), user=Depends(verify_token)):
     delete = db.query(models.Blog).filter(models.Blog.id == id).first()
     if delete is None:
         raise HTTPException(status_code=404,detail="Blog not found")
     db.delete(delete)
     db.commit()
     return {"message" : "Blog deleted successfully"}   
+
+#Login API
+@app.post("/login")
+def login():
+    return create_token({"sub" : "Parth"})
 
