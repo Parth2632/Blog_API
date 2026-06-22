@@ -92,7 +92,3 @@ You can interact with the auto-generated Swagger UI documentation at `http://loc
 
 ---
 
-## 🔮 Future Enhancements
-- Integration of a **Streamlit** frontend for an interactive user interface.
-- Migration to **PostgreSQL** for production-grade data persistence.
-- CI/CD pipelines via GitHub Actions for automated testing.
