@@ -3,6 +3,7 @@
 Provides CRUD operations for blog posts with JWT authentication.
 """
 from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, session_local
 import models
@@ -12,6 +13,14 @@ from auth import verify_token, create_token, verify_credentials  # add verify_cr
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Blog API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For dev purposes, adjust for production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # ── DB dependency ────────────────────────────────────────────────────────────
